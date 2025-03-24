@@ -6,6 +6,10 @@ function drawIt() {
     var WIDTH;
     var HEIGHT;
     var r = 10;
+    var tocke; 
+    var rowcolors = ["#008000", "#FFFD0A", "#00A308", "#0008DB", " #008000"];
+    var paddlecolor = "#000000";
+    var ballcolor = "#333333";
     var bricks;
     var NROWS;
     var NCOLS;
@@ -24,6 +28,8 @@ function drawIt() {
         ctx = $('#canvas')[0].getContext("2d");
         WIDTH = $("#canvas").width();
         HEIGHT = $("#canvas").height();
+        tocke = 0;
+        $("#tocke").html(tocke);
         return intervalId = setInterval(draw, 10);
     }
 
@@ -85,6 +91,18 @@ function drawIt() {
             }
         }
         rect(paddlex, HEIGHT - paddleh, paddlew, paddleh);
+
+        for (i=0; i < NROWS; i++) {
+            ctx.fillStyle = rowcolors[i]; //barvanje vrstic
+            for (j=0; j < NCOLS; j++) {
+              if (bricks[i][j] == 1) {
+                rect((j * (BRICKWIDTH + PADDING)) + PADDING,
+                    (i * (BRICKHEIGHT + PADDING)) + PADDING,
+                    BRICKWIDTH, BRICKHEIGHT);
+              }
+            }
+          }
+        
         //riši opeke
         for (i = 0; i < NROWS; i++) {
             for (j = 0; j < NCOLS; j++) {
@@ -103,6 +121,8 @@ function drawIt() {
         //Če smo zadeli opeko, vrni povratno kroglo in označi v tabeli, da opeke ni več
         if (y < NROWS * rowheight && row >= 0 && col >= 0 && bricks[row][col] == 1) {
             dy = -dy; bricks[row][col] = 0;
+            tocke += 1;
+            $("#tocke").html(tocke);
         }
         if (x + dx > WIDTH - r || x + dx <  r)
             dx = -dx;
