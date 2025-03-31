@@ -6,10 +6,11 @@ function drawIt() {
     var WIDTH;
     var HEIGHT;
     var r = 10;
-    var tocke; 
-    var rowcolors = ["#008000", "#FFFD0A", "#00A308", "#0008DB", " #008000"];
-    var paddlecolor = "#000000";
-    var ballcolor = "#333333";
+    var tocke;
+    var rowcolors = ["#008000", "#FFFD0A", "#00A308", "#0008DB", "rgb(128, 23, 0)"];
+    var paddlecolor = "#FF0000";
+    var ballcolor = "#00FF00";
+    var start = true;
     var bricks;
     var NROWS;
     var NCOLS;
@@ -29,6 +30,8 @@ function drawIt() {
         WIDTH = $("#canvas").width();
         HEIGHT = $("#canvas").height();
         tocke = 0;
+        sekunde = 0;
+        izpisTimer = "00:00";
         $("#tocke").html(tocke);
         return intervalId = setInterval(draw, 10);
     }
@@ -52,7 +55,7 @@ function drawIt() {
     }
     //END LIBRARY CODE
     function init_paddle() {
-        paddlex = WIDTH/2;
+        paddlex = WIDTH / 2;
         paddleh = 10;
         paddlew = 100;
     }
@@ -71,9 +74,22 @@ function drawIt() {
     $(document).keydown(onKeyDown);
     $(document).keyup(onKeyUp);
 
+    document.addEventListener("mousemove", mouseMoveHandler, false);
+
+
+    function mouseMoveHandler(e) {
+        var relativeX = e.clientX - canvas.offsetLeft;
+        if (relativeX > 0 && relativeX < canvas.width) {
+            paddlex = relativeX - paddlew / 2;
+        }
+    }
+
     function draw() {
 
         clear();
+
+
+        ctx.fillStyle = ballcolor;
         circle(x, y, 10);
         //premik ploščice levo in desno
         if (rightDown) {
@@ -90,21 +106,11 @@ function drawIt() {
                 paddlex = 0;
             }
         }
+        ctx.fillStyle = paddlecolor;
         rect(paddlex, HEIGHT - paddleh, paddlew, paddleh);
 
-        for (i=0; i < NROWS; i++) {
-            ctx.fillStyle = rowcolors[i]; //barvanje vrstic
-            for (j=0; j < NCOLS; j++) {
-              if (bricks[i][j] == 1) {
-                rect((j * (BRICKWIDTH + PADDING)) + PADDING,
-                    (i * (BRICKHEIGHT + PADDING)) + PADDING,
-                    BRICKWIDTH, BRICKHEIGHT);
-              }
-            }
-          }
-        
-        //riši opeke
         for (i = 0; i < NROWS; i++) {
+            ctx.fillStyle = rowcolors[i]; //barvanje vrstic
             for (j = 0; j < NCOLS; j++) {
                 if (bricks[i][j] == 1) {
                     rect((j * (BRICKWIDTH + PADDING)) + PADDING,
@@ -114,27 +120,50 @@ function drawIt() {
             }
         }
 
-        rowheight = BRICKHEIGHT + PADDING  / 2; //Smo zadeli opeko?
-        colwidth = BRICKWIDTH + PADDING  / 2;
+        if (start == true) {
+            sekunde++;
+
+            sekundeI = ((sekundeI = (sekunde % 60)) > 9) ? sekundeI : "0" + sekundeI;
+            minuteI = ((minuteI = Math.floor(sekunde / 60)) > 9) ? minuteI : "0" + minuteI;
+            izpisTimer = minuteI + ":" + sekundeI;
+
+            $("#cas").html(izpisTimer);
+        }
+        else {
+            sekunde = 0;
+            //izpisTimer = "00:00";
+            $("#cas").html(izpisTimer);
+        }
+
+        rowheight = BRICKHEIGHT + PADDING / 2; //Smo zadeli opeko?
+        colwidth = BRICKWIDTH + PADDING / 2;
         row = Math.floor(y / rowheight);
         col = Math.floor(x / colwidth);
         //Če smo zadeli opeko, vrni povratno kroglo in označi v tabeli, da opeke ni več
+        if (tocke == NROWS * NCOLS) {
+            //win
+        }
         if (y < NROWS * rowheight && row >= 0 && col >= 0 && bricks[row][col] == 1) {
             dy = -dy; bricks[row][col] = 0;
             tocke += 1;
             $("#tocke").html(tocke);
         }
-        if (x + dx > WIDTH - r || x + dx <  r)
+        if (x + dx > WIDTH - r || x + dx < r)
             dx = -dx;
         if (y + dy < 0 + r)
             dy = -dy;
-        else if (y + dy > HEIGHT - r ) {
-            if (x > paddlex && x < paddlex + paddlew){
+        else if (y + dy > HEIGHT - r) {
+            start = false;
+            if (x > paddlex && x < paddlex + paddlew) {
                 dy = -dy;
-                dx = 8 * ((x-(paddlex+paddlew/2))/paddlew);
+                start = true;
+                dx = 8 * ((x - (paddlex + paddlew / 2)) / paddlew);
             }
-            else if (y + dy > HEIGHT - r)
+            else if (y + dy > HEIGHT - r){
+                console.log("KONEC");
                 clearInterval(intervalId);
+            }
+                
         }
         x += dx;
         y += dy;
