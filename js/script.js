@@ -20,6 +20,9 @@ function drawIt() {
     var BRICKHEIGHT;
     var PADDING;
     var ctx;
+    var canvass;
+    canvass = document.getElementById('canvas');
+    let pomakniZa = 0;
     let intervalId;
     var rightDown = false;
     var leftDown = false;
@@ -128,9 +131,8 @@ function drawIt() {
                 paddlex = 0;
             }
         }
-        ctx.fillStyle = paddlecolor;
+        ctx.globalCompositeOperation = "destination-over";
         drawPaddle(paddlex, HEIGHT - paddleh, paddlew, paddleh);
-
         for (i = 0; i < NROWS; i++) {
             for (j = 0; j < NCOLS; j++) {
                 if (bricks[i][j] == 1) {
@@ -138,11 +140,11 @@ function drawIt() {
                         (i * (BRICKHEIGHT + PADDING)) + PADDING,
                         BRICKWIDTH, BRICKHEIGHT);*/
                     drawAsteroid((j * (BRICKWIDTH + PADDING)) + PADDING,
-                        (i * (BRICKHEIGHT + PADDING)) + PADDING, colors[i][j]);
+                        (i * (BRICKHEIGHT + PADDING)) + PADDING + pomakniZa, colors[i][j]);
                 }
             }
         }
-
+        pomakniZa+=0.1;
         if (start == true) {
             sekunde++;
 
@@ -160,14 +162,19 @@ function drawIt() {
 
         rowheight = BRICKHEIGHT + PADDING; //Smo zadeli opeko?
         colwidth = BRICKWIDTH + PADDING;
-        row = Math.floor(y / rowheight);
+        row = Math.floor((y - pomakniZa) / rowheight);
         col = Math.floor(x / colwidth);
         //Če smo zadeli opeko, vrni povratno kroglo in označi v tabeli, da opeke ni več
         if (tocke == NROWS * NCOLS) {
             //win
         }
-        if (y < NROWS * rowheight && row >= 0 && col >= 0 && bricks[row][col] == 1) {
-            dy = -dy; bricks[row][col] = 0;
+        if (
+            row >= 0 && row < NROWS &&
+            col >= 0 && col < NCOLS &&
+            bricks[row][col] == 1
+        ) {
+            dy = -dy;
+            bricks[row][col] = 0;
             tocke += 1;
             $("#tocke").html(tocke);
         }
