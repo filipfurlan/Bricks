@@ -21,6 +21,7 @@ function drawIt() {
     var PADDING;
     var ctx;
     var canvass;
+    var lives = 5;
     canvass = document.getElementById('canvas');
     let pomakniZa = 0;
     let intervalId;
@@ -139,12 +140,35 @@ function drawIt() {
                     /*rect((j * (BRICKWIDTH + PADDING)) + PADDING,
                         (i * (BRICKHEIGHT + PADDING)) + PADDING,
                         BRICKWIDTH, BRICKHEIGHT);*/
-                    drawAsteroid((j * (BRICKWIDTH + PADDING)) + PADDING,
-                        (i * (BRICKHEIGHT + PADDING)) + PADDING + pomakniZa, colors[i][j]);
+                    let asteroidX = (j * (BRICKWIDTH + PADDING)) + PADDING;
+                    let asteroidY = (i * (BRICKHEIGHT + PADDING)) + PADDING + pomakniZa;
+                    ctx.globalCompositeOperation = "source-over";
+                    drawAsteroid(asteroidX, asteroidY, colors[i][j]);
+                    //drawAsteroid((j * (BRICKWIDTH + PADDING)) + PADDING,
+                    //  (i * (BRICKHEIGHT + PADDING)) + PADDING + pomakniZa, colors[i][j]);
+                    let asteroidBottom = asteroidY + BRICKHEIGHT;
+                    let paddleTop = HEIGHT - paddleh;
+
+                    // Check if asteroid hits the paddle
+                    if (
+                        asteroidBottom >= paddleTop &&
+                        asteroidY <= HEIGHT && // in case it goes too far
+                        asteroidX + BRICKWIDTH >= paddlex &&
+                        asteroidX <= paddlex + paddlew
+                    ) {
+                        bricks[i][j] = 0;//remove brick on ship impact
+                        lives--;
+                    }
+                    if (lives <= 0) {
+                        clearInterval(intervalId);
+                        alert("Game Over! All lives lost!");
+                        lives = 5;
+                    }
                 }
+                $("#lives").html("Lives: " + lives);
             }
         }
-        pomakniZa+=0.1;
+        pomakniZa += 0.5;
         if (start == true) {
             sekunde++;
 
@@ -159,6 +183,14 @@ function drawIt() {
             //izpisTimer = "00:00";
             $("#cas").html(izpisTimer);
         }
+
+        /*let bottomOfBricks = NROWS * (BRICKHEIGHT + PADDING) + pomakniZa;
+        let paddleTop = HEIGHT - paddleh;
+
+        if (bottomOfBricks >= paddleTop) {
+            clearInterval(intervalId);
+            alert("Game Over! The asteroids reached you!");
+        }*/
 
         rowheight = BRICKHEIGHT + PADDING; //Smo zadeli opeko?
         colwidth = BRICKWIDTH + PADDING;
