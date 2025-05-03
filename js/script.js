@@ -2,7 +2,7 @@ function drawIt() {
     var x = 600;
     var y = 300;
     var dx = 2;
-    var dy = 4;
+    var dy = 8;
     var WIDTH;
     var HEIGHT;
     var r = 10;
@@ -12,6 +12,7 @@ function drawIt() {
     var ballcolor = "#00FF00";
     var start = true;
     var bricks;
+    let pulseTime = 0;
     var colors;
     let kateri = 0;
     var NROWS;
@@ -22,6 +23,7 @@ function drawIt() {
     var ctx;
     var canvass;
     var lives = 5;
+    let timerStarted = false;
     canvass = document.getElementById('canvas');
     let pomakniZa = 0;
     let intervalId;
@@ -32,9 +34,14 @@ function drawIt() {
     var paddlew;
     var paddleBounce;
     const img = new Image();
-    img.src = 'img/as.png';
+    img.src = 'img/as2.png';
     const img2 = new Image();
     img2.src = 'img/ladica.png';
+    let isGameRunning = false;
+    let isGamePaused = false;
+    let explosions = [];
+    let gameOver = false;
+    let victory = false;
 
     function init() {
         ctx = $('#canvas')[0].getContext("2d");
@@ -44,8 +51,21 @@ function drawIt() {
         sekunde = 0;
         izpisTimer = "00:00";
         $("#tocke").html(tocke);
-        return intervalId = setInterval(draw, 10);
+        $("#cas").html(izpisTimer);
+        $("#warning").hide();
+        lives = 5;
+        pomakniZa = 0;
+
+        init_paddle();
+        initbricks();
+
+        if (!intervalId) intervalId = setInterval(draw, 10);
+
+
+        isGameRunning = true;
+        isGamePaused = false;
     }
+
 
     function circle(x, y, r) {
         ctx.beginPath();
@@ -87,9 +107,16 @@ function drawIt() {
     }
     //nastavljanje leve in desne tipke
     function onKeyDown(evt) {
+        if (gameOver||victory) return;
         if (evt.keyCode == 39)
             rightDown = true;
-        else if (evt.keyCode == 37) leftDown = true;
+        else if (evt.keyCode == 37)
+            leftDown = true;
+        else if (evt.key === "Escape") {
+            if (isGameRunning) {
+                isGamePaused = !isGamePaused;
+            }
+        }
     }
 
     function onKeyUp(evt) {
@@ -109,14 +136,79 @@ function drawIt() {
         }
     }
 
+    document.getElementById("startBtn").addEventListener("click", () => {
+        if (!isGameRunning) {
+            init();
+        } else if (isGamePaused) {
+            resumeGame();
+        }
+    });
+
+    document.getElementById("pauseBtn").addEventListener("click", () => {
+        if (isGameRunning) {
+            pauseGame();
+        }
+    });
+
+    document.getElementById("restartBtn").addEventListener("click", () => {
+        restartGame();
+    });
+
+
     function draw() {
-
         clear();
+        pulseTime += 0.1;
+        if (isGamePaused) {
+            const pulse = Math.sin(pulseTime * 5) * 0.5 + 0.5;
+            ctx.font = "bold 60px Arial";
+            ctx.fillStyle = `rgba(255, 0, 0, ${0.5 + pulse * 0.5})`;
+            ctx.textAlign = "center";
+            ctx.fillText("PAUSED", WIDTH / 2, HEIGHT / 2);
+            return; // Skip game updates, but keep drawing everything as-is
+        }
+
+        if (gameOver) {
+            ctx.save();
+            ctx.clearRect(0, 0, WIDTH, HEIGHT); // Clear screen so text isn't drawn over old frames
+            const scale = 1 + 0.05 * Math.sin(Date.now() / 200);
+
+            ctx.font = `bold ${50 * scale}px Arial`;
+            ctx.fillStyle = "red";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText("GAME OVER", WIDTH / 2, HEIGHT / 2);
+            ctx.restore();
+
+            return;
+        }
+        else if (victory) {
+            ctx.save();
+            ctx.clearRect(0, 0, WIDTH, HEIGHT); // Clear screen
+
+            const scale = 1 + 0.05 * Math.sin(Date.now() / 200);
+            ctx.font = `bold ${50 * scale}px Arial`;
+            ctx.fillStyle = "lime";
+            ctx.textAlign = "center";
+            ctx.textBaseline = "middle";
+            ctx.fillText("YOU WIN!", WIDTH / 2, HEIGHT / 2);
+            ctx.restore();
+
+            return;
+        }
 
 
-        ctx.fillStyle = ballcolor;
-        ctx.globalCompositeOperation = "destination-over";
-        circle(x, y, 10);
+        if (isGamePaused) {
+            const pulse = Math.sin(pulseTime * 5) * 0.5 + 0.5;
+            ctx.font = "bold 60px Arial";
+            ctx.fillStyle = `rgba(255, 0, 0, ${0.5 + pulse * 0.5})`;
+            ctx.textAlign = "center";
+            ctx.fillText("PAUSED", WIDTH / 2, HEIGHT / 2);
+            return;
+        }
+
+        drawLaser(x, y, dx, dy);
+
+
         //premik levo in desno
         if (rightDown) {
             if ((paddlex + paddlew) < WIDTH) {
@@ -137,52 +229,79 @@ function drawIt() {
         for (i = 0; i < NROWS; i++) {
             for (j = 0; j < NCOLS; j++) {
                 if (bricks[i][j] == 1) {
-                    /*rect((j * (BRICKWIDTH + PADDING)) + PADDING,
-                        (i * (BRICKHEIGHT + PADDING)) + PADDING,
-                        BRICKWIDTH, BRICKHEIGHT);*/
                     let asteroidX = (j * (BRICKWIDTH + PADDING)) + PADDING;
                     let asteroidY = (i * (BRICKHEIGHT + PADDING)) + PADDING + pomakniZa;
+
                     ctx.globalCompositeOperation = "source-over";
                     drawAsteroid(asteroidX, asteroidY, colors[i][j]);
-                    //drawAsteroid((j * (BRICKWIDTH + PADDING)) + PADDING,
-                    //  (i * (BRICKHEIGHT + PADDING)) + PADDING + pomakniZa, colors[i][j]);
+
                     let asteroidBottom = asteroidY + BRICKHEIGHT;
                     let paddleTop = HEIGHT - paddleh;
 
-                    // Check if asteroid hits the paddle
+                    //  ESCAPE CHECK — asteroid passed below the screen
+                    if (asteroidY > HEIGHT) {
+                        gameOver = true;
+                        return; // Stop further processing
+                    }
+
+                    //  Paddle collision
                     if (
                         asteroidBottom >= paddleTop &&
-                        asteroidY <= HEIGHT && // in case it goes too far
+                        asteroidY <= HEIGHT &&
                         asteroidX + BRICKWIDTH >= paddlex &&
                         asteroidX <= paddlex + paddlew
                     ) {
-                        bricks[i][j] = 0;//remove brick on ship impact
+                        bricks[i][j] = 0; // remove brick on impact
                         lives--;
+
+                        let explosionX = asteroidX + BRICKWIDTH / 2;
+                        let explosionY = paddleTop + paddleh / 2;
+
+                        explosions.push({ x: explosionX, y: explosionY, radius: 0, alpha: 1 });
                     }
+
+                    //  Game over on life loss
                     if (lives <= 0) {
-                        clearInterval(intervalId);
-                        alert("Game Over! All lives lost!");
-                        lives = 5;
+                        $("#lives").html("Lives: " + lives);
+                        gameOver = true;
+                        //alert("Game Over! All lives lost!");
+                        return;
                     }
                 }
+
+                //  UI Updates
                 $("#lives").html("Lives: " + lives);
+                if (lives <= 2 && lives > 0) {
+                    $("#warning").show();
+                    if (Math.floor(Date.now() / 500) % 2 === 0) {
+                        $("#warning").css("visibility", "visible");
+                    } else {
+                        $("#warning").css("visibility", "hidden");
+                    }
+                } else {
+                    $("#warning").hide();
+                }
             }
         }
-        pomakniZa += 0.5;
-        if (start == true) {
+
+        pomakniZa += 0.1;
+        if (start === true) {
+            if (!timerStarted) {
+                timerStarted = true;
+                sekunde = 0;
+            }
+
             sekunde++;
 
-            sekundeI = ((sekundeI = (sekunde % 60)) > 9) ? sekundeI : "0" + sekundeI;
-            minuteI = ((minuteI = Math.floor(sekunde / 60)) > 9) ? minuteI : "0" + minuteI;
+            let sekundeI = ((sekunde % 60) > 9) ? (sekunde % 60) : "0" + (sekunde % 60);
+            let minuteI = ((Math.floor(sekunde / 60)) > 9) ? Math.floor(sekunde / 60) : "0" + Math.floor(sekunde / 60);
             izpisTimer = minuteI + ":" + sekundeI;
 
             $("#cas").html(izpisTimer);
-        }
-        else {
-            sekunde = 0;
-            //izpisTimer = "00:00";
+        } else {
             $("#cas").html(izpisTimer);
         }
+
 
         /*let bottomOfBricks = NROWS * (BRICKHEIGHT + PADDING) + pomakniZa;
         let paddleTop = HEIGHT - paddleh;
@@ -206,16 +325,17 @@ function drawIt() {
             bricks[row][col] == 1
         ) {
             dy = -dy;
-            bricks[row][col] = 0;
-            tocke += 1;
+            const hitColor = colors[row][col];
+            floodFillBricks(row, col, hitColor);
             $("#tocke").html(tocke);
         }
+
         if (x + dx > WIDTH - r || x + dx < r)
             dx = -dx;
         if (y + dy < r)
             dy = -dy;
         else if (y + dy > HEIGHT - paddleBounce - r) {
-            start = false;
+            //start = false;
             let hitPos = x - paddlex; // where the ball hits the paddle horizontally
             let ballBottom = y + r;
             let paddleTop = HEIGHT - paddleh;
@@ -247,12 +367,36 @@ function drawIt() {
             }
 
             else if (y + dy > HEIGHT - r) {
+                gameOver = true;
                 console.log("kdi");
-                clearInterval(intervalId);
             }
         }
         x += dx;
         y += dy;
+        for (let i = explosions.length - 1; i >= 0; i--) {
+            let ex = explosions[i];
+
+            // Style
+            ctx.beginPath();
+            ctx.arc(ex.x, ex.y, ex.radius, 0, Math.PI * 2);
+            ctx.closePath();
+            ctx.strokeStyle = `rgba(255, 165, 0, ${ex.alpha})`; // orange
+            ctx.lineWidth = 4;
+            ctx.stroke();
+
+            // Animate
+            ex.radius += 2;
+            ex.alpha -= 0.05;
+
+            if (ex.alpha <= 0) {
+                explosions.splice(i, 1); // remove when done
+            }
+        }
+
+        if (!gameOver && bricks.flat().every(cell => cell === 0) && lives > 0) {
+            victory = true;
+        }
+
     }
 
     function initbricks() { //inicializacija opek - polnjenje v tabelo
@@ -269,17 +413,97 @@ function drawIt() {
             colors[i] = new Array(NCOLS);
             for (var j = 0; j < NCOLS; j++) {
                 if (rand > 0 && rand < 26) {
-                    kateri = 128;
+                    kateri = 192 + 128;
                 }
                 else if (rand >= 25 && rand < 76) {
-                    kateri = 64;
-                } else {
-                    kateri = 0;
+                    kateri = 192 + 64;
+                } else if (rand >= 90) {
+                    kateri = 192;
+                }
+                else {
+                    kateri = 192 * 2;
                 }
                 bricks[i][j] = 1;
                 rand = Math.floor(Math.random() * 100);
                 colors[i][j] = kateri;
             }
+        }
+    }
+    function drawLaser(x, y, dx, dy) {
+        ctx.save();
+
+        // Calculate angle
+        const angle = Math.atan2(dy, dx);
+        ctx.translate(x, y);
+        ctx.rotate(angle);
+
+        // Pulse logic: oscillate width and alpha
+        const pulseWidth = 4 + Math.sin(pulseTime * 2) * 2; // width 2–6 px
+        const alpha = 0.7 + Math.sin(pulseTime * 3) * 0.3;   // alpha 0.4–1.0
+
+        const laserGradient = ctx.createLinearGradient(-30, 0, 30, 0);
+        laserGradient.addColorStop(0, `rgba(0,255,255,0)`);
+        laserGradient.addColorStop(0.5, `rgba(0,255,255,${alpha})`);
+        laserGradient.addColorStop(1, `rgba(0,255,255,0)`);
+
+        ctx.fillStyle = laserGradient;
+        ctx.shadowColor = "cyan";
+        ctx.shadowBlur = 20;
+
+        ctx.fillRect(-30, -pulseWidth / 2, 60, pulseWidth);
+
+        ctx.shadowBlur = 0;
+        ctx.restore();
+    }
+    function pauseGame() {
+        isGamePaused = true;
+    }
+
+    function resumeGame() {
+        isGamePaused = false;
+    }
+    function restartGame() {
+        clearInterval(intervalId);
+        intervalId = null;
+        isGameRunning = false;
+        isGamePaused = false;
+        gameOver = false;
+        victory = false;
+        x = 600;
+        y = 300;
+        dx = 2;
+        dy = 4;
+        init();
+    }
+    function floodFillBricks(row, col, colorIndex) {
+        if (row < 0 || row >= NROWS || col < 0 || col >= NCOLS) return;
+        if (bricks[row][col] === 0) return;
+        if (colors[row][col] !== colorIndex) return;
+
+        // Calculate position of the asteroid
+        let x = (col * (BRICKWIDTH + PADDING)) + PADDING + BRICKWIDTH / 2;
+        let y = (row * (BRICKHEIGHT + PADDING)) + PADDING + BRICKHEIGHT / 2 + pomakniZa;
+
+        // Add explosion
+        explosions.push({ x, y, radius: 0, alpha: 1 });
+
+        bricks[row][col] = 0;
+        tocke += 1;
+
+        // All 8 directions: vertical, horizontal, and diagonal
+        const directions = [
+            [-1, 0], // up
+            [1, 0], // down
+            [0, -1], // left
+            [0, 1], // right
+            [-1, -1], // up-left
+            [-1, 1], // up-right
+            [1, -1], // down-left
+            [1, 1]  // down-right
+        ];
+
+        for (const [dRow, dCol] of directions) {
+            floodFillBricks(row + dRow, col + dCol, colorIndex);
         }
     }
     init();

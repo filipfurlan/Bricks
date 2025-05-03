@@ -1,0 +1,101 @@
+/* Make sure body fills entire screen with background */
+body {
+    background-image: url("img/bg2.png");
+    background-size: cover;
+    background-position: center;
+    margin: 0;
+    padding: 0;
+    font-family: 'Orbitron', sans-serif;
+    height: 100vh;
+    overflow: hidden;
+    position: relative;
+}
+
+/* Optional semi-transparent overlay to boost contrast */
+#overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.3);
+    z-index: 0;
+}
+
+/* Main container centered */
+#main {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    z-index: 1;
+}
+
+/* Game canvas - no ugly border, responsive scaling */
+canvas {
+    background-color: transparent;
+    max-width: 100%;
+    height: auto;
+    border: 1px solid yellow;
+    z-index: 1;
+}
+
+/* HUD panel with good contrast and position */
+#hud {
+    position: absolute;
+    bottom: 20px;
+    left: 5px;
+    background-color: rgba(0, 0, 0, 0.7);
+    padding: 15px 20px;
+    border-radius: 10px;
+    font-family: 'Orbitron', sans-serif;
+    color: white;
+}
+
+#hud p {
+    margin: 8px 0;
+    font-size: 16px;
+}
+
+#hud span {
+    color: #ADFF2F; /* neon yellow-green */
+    font-weight: bold;
+}
+
+#hud button {
+    background-color: black;
+    color: #00FF00;
+    border: 2px solid #00FF00;
+    font-family: 'Orbitron', sans-serif;
+    font-size: 14px;
+    margin: 5px 3px 0 0;
+    padding: 6px 12px;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+#hud button:hover {
+    background-color: #00FF00;
+    color: black;
+    box-shadow: 0 0 12px #00FF00;
+}
+
+
+#hud p {
+    margin: 4px 0;
+}
+
+mark, #tocke, #cas {
+    background: none;
+    color: yellow;
+    font-weight: bold;
+}
+#warning {
+    animation: blink 1s infinite;
+}
+
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+}

@@ -1,21 +1,44 @@
 <!DOCTYPE html>
-<html lang="EN">
+<html lang="en">
 
 <head>
     <title>Asteroid</title>
+    <meta charset="UTF-8" />
     <script src="js/jquery.js"></script>
     <script src="js/script.js"></script>
-    <link rel="stylesheet" href="style.css"> 
+    <link rel="stylesheet" href="style.css">
+    <!-- Optional nice-looking font -->
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
 </head>
 
 <body onload="drawIt()">
-    <div id="title-screen">
-        <div class="loader"></div>
+    <!-- Optional dark overlay for better contrast -->
+    <div id="overlay"></div>
+
+    <div id="main">
+        <canvas id="canvas" width="1200" height="900"></canvas>
+
+        <!-- HUD panel for UI elements -->
+        <div id="hud">
+            <p>Points: <span id="tocke">0</span></p>
+            <p>Time: <span id="cas">0</span></p>
+            <div id="warning" style="display:none; color: red; font-size: 24px; font-weight: bold;">
+                ⚠ LOW LIVES!
+            </div>
+
+            <p id="lives">Lives: 5</p>
+            
+            <select id="difficulty">
+                <option value="easy">Easy</option>
+                <option value="medium" selected>Medium</option>
+                <option value="hard">Hard</option>
+            </select>
+            <br>
+            <button id="startBtn">Start Game</button>
+            <button id="pauseBtn">Pause</button>
+            <button id="restartBtn">Restart</button>
+        </div>
     </div>
-    <canvas id="canvas" width="1200" height="600" style="border: 1px solid black;"></canvas>
-    <p>Points: <mark id="tocke">0</mark></p>
-    <p>Time: <mark id="cas">0</mark></p>
-    <div id="lives">Lives: 5</div>
 </body>
 
 </html>
