@@ -1,8 +1,9 @@
+// sound effecti, sessionStorage(highscore), ladja texture, drop down menu css, canvass height in border.
 function drawIt() {
     var x = 600;
     var y = 300;
     var dx = 2;
-    var dy = 8;
+    var dy = 4;
     var WIDTH;
     var HEIGHT;
     var r = 10;
@@ -25,6 +26,9 @@ function drawIt() {
     var lives = 5;
     let timerStarted = false;
     canvass = document.getElementById('canvas');
+    var difficulty = document.getElementById("difficulty");
+    var diff;
+    var hitrost = 0.1;
     let pomakniZa = 0;
     let intervalId;
     var rightDown = false;
@@ -107,7 +111,7 @@ function drawIt() {
     }
     //nastavljanje leve in desne tipke
     function onKeyDown(evt) {
-        if (gameOver||victory) return;
+        if (gameOver || victory) return;
         if (evt.keyCode == 39)
             rightDown = true;
         else if (evt.keyCode == 37)
@@ -118,6 +122,12 @@ function drawIt() {
             }
         }
     }
+
+    const select = document.getElementById('difficulty');
+    select.addEventListener('change', (e) => {
+        diff = e.target.value;
+        getDifficulty();
+    });
 
     function onKeyUp(evt) {
         if (evt.keyCode == 39)
@@ -284,7 +294,7 @@ function drawIt() {
             }
         }
 
-        pomakniZa += 0.1;
+        pomakniZa += hitrost;
         if (start === true) {
             if (!timerStarted) {
                 timerStarted = true;
@@ -504,6 +514,19 @@ function drawIt() {
 
         for (const [dRow, dCol] of directions) {
             floodFillBricks(row + dRow, col + dCol, colorIndex);
+        }
+    }
+    function getDifficulty() {
+        switch (diff) {
+            case 'easy':
+                hitrost = 0.1;
+                break;
+            case 'medium':
+                hitrost = 0.2;
+                break;
+            case 'hard':
+                hitrost = 0.4;
+                break;
         }
     }
     init();
