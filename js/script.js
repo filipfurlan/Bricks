@@ -1,4 +1,4 @@
-// sound effecti, sessionStorage(highscore), ladja texture, drop down menu css, canvass height in border.
+// sound effecti
 function drawIt() {
     var x = 600;
     var y = 300;
@@ -27,6 +27,7 @@ function drawIt() {
     let timerStarted = false;
     canvass = document.getElementById('canvas');
     var difficulty = document.getElementById("difficulty");
+    let highScore = sessionStorage.getItem("highScore") || 0;
     var diff;
     var hitrost = 0.1;
     let pomakniZa = 0;
@@ -57,6 +58,8 @@ function drawIt() {
         $("#tocke").html(tocke);
         $("#cas").html(izpisTimer);
         $("#warning").hide();
+        sessionStorage.setItem("highScore", highScore);
+        $("#highscore").text(highScore);
         lives = 5;
         pomakniZa = 0;
 
@@ -181,7 +184,7 @@ function drawIt() {
             ctx.save();
             ctx.clearRect(0, 0, WIDTH, HEIGHT); // Clear screen so text isn't drawn over old frames
             const scale = 1 + 0.05 * Math.sin(Date.now() / 200);
-
+            updateScore(tocke);
             ctx.font = `bold ${50 * scale}px Arial`;
             ctx.fillStyle = "red";
             ctx.textAlign = "center";
@@ -194,7 +197,7 @@ function drawIt() {
         else if (victory) {
             ctx.save();
             ctx.clearRect(0, 0, WIDTH, HEIGHT); // Clear screen
-
+            updateScore(tocke);
             const scale = 1 + 0.05 * Math.sin(Date.now() / 200);
             ctx.font = `bold ${50 * scale}px Arial`;
             ctx.fillStyle = "lime";
@@ -527,6 +530,13 @@ function drawIt() {
             case 'hard':
                 hitrost = 0.4;
                 break;
+        }
+    }
+    function updateScore(newScore) {
+        if (newScore > highScore) {
+            highScore = newScore;
+            sessionStorage.setItem("highScore", highScore);
+            $("#highscore").text(highScore);
         }
     }
     init();
