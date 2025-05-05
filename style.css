@@ -103,6 +103,10 @@ canvas {
     margin: 4px 0;
 }
 
+#creds{
+    margin-top: 10px;
+}
+
 mark, #tocke, #cas {
     background: none;
     color: yellow;
