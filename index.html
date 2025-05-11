@@ -4,6 +4,7 @@
 <head>
     <title>Astrobricks</title>
     <meta charset="UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="js/jquery.js"></script>
     <script src="js/script.js"></script>
     <link rel="stylesheet" href="style.css">
@@ -12,11 +13,12 @@
     <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@500&display=swap" rel="stylesheet">
 </head>
 
-<body onload="drawIt()">
+<body>
     
     <div id="overlay"></div>
 
     <div id="main">
+        
         <canvas id="canvas" width="1200" height="950"></canvas>
 
         
@@ -35,9 +37,10 @@
                 <option value="medium" >Medium</option>
                 <option value="hard">Hard</option>
             </select>
+            <button id="instructionsBtn" onclick="displayInstructions()">Instructions</button>  
             <br>
-            <button id="startBtn">Resume</button>
-            <button id="pauseBtn">Pause</button>
+            <button id="startBtn" onclick="drawIt()">Resume</button>
+            <button id="pauseBtn">Pause - ESC</button>
             <button id="restartBtn">Restart</button>
             <div id="creds">
                 <p>Made by Filip Furlan 4. Rb</p>

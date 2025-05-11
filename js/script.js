@@ -149,18 +149,14 @@ function drawIt() {
         }
     }
 
-    document.getElementById("startBtn").addEventListener("click", () => {
-        if (!isGameRunning) {
-            init();
-        } else if (isGamePaused) {
-            resumeGame();
-        }
-    });
+   /* document.getElementById("startBtn").addEventListener("click", () => {
+
+    });*/
 
     document.getElementById("pauseBtn").addEventListener("click", () => {
         if (isGameRunning) {
-            pauseGame();
-        }
+                isGamePaused = !isGamePaused;
+            }
     });
 
     document.getElementById("restartBtn").addEventListener("click", () => {
@@ -542,4 +538,21 @@ function drawIt() {
     init();
     init_paddle();
     initbricks();
+}
+function displayInstructions() {
+    Swal.fire({
+        title: 'How to Play',
+        html: `
+              <ul style="text-align:left; margin: 0; padding-left: 1.2em;">
+                <li>Use the ← and → arrow keys or mouse to move your ship.</li>
+                <li>Keep the laser in play by catching it with your ship.</li>
+                <li>Break all the asteroids to win.</li>
+                <li>You start with 5 lives; getting hit by or letting an asteroid pass looses a life.</li>
+              </ul>
+            `,
+        icon: 'info',
+        confirmButtonText: 'Got it!',
+        background: '#000',   // black background
+        color: '#fff'         // white text
+    });
 }
