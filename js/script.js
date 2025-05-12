@@ -1,4 +1,13 @@
 // sound effecti
+let gameOver = false;
+let victory = false;
+let isGameRunning = false;
+let isGamePaused = false;
+document.getElementById("startBtn").addEventListener("click", () => {
+        if (!gameOver && !victory && !isGameRunning && !isGamePaused) {
+                drawIt();
+            }
+    });
 function drawIt() {
     var x = 600;
     var y = 300;
@@ -42,11 +51,10 @@ function drawIt() {
     img.src = 'img/as2.png';
     const img2 = new Image();
     img2.src = 'img/ladica.png';
-    let isGameRunning = false;
-    let isGamePaused = false;
+    
+    
     let explosions = [];
-    let gameOver = false;
-    let victory = false;
+
 
     function init() {
         ctx = $('#canvas')[0].getContext("2d");
